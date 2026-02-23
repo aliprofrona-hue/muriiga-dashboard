@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MURIIGA · SCHaiR MONUSCO Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --un-blue: #009EDB;
+    --un-dark: #0A1628;
+    --un-mid: #0D2442;
+    --accent-gold: #F5C400;
+    --accent-orange: #FF6B35;
+    --accent-green: #00C896;
+    --accent-red: #FF4757;
+    --glass: rgba(255,255,255,0.06);
+    --border: rgba(0,158,219,0.25);
+    --text-primary: #E8F4FD;
+    --text-secondary: #8BAEC8;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--un-dark);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,158,219,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,158,219,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Header */
+  .header {
+    position: relative;
+    z-index: 10;
+    padding: 24px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,22,40,0.9);
+    backdrop-filter: blur(12px);
+  }
+
+  .logo-area { display:flex; align-items:center; gap:16px; }
+
+  .un-badge {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--un-blue), #004B87);
+    display: flex; align-items:center; justify-content:center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    border: 2px solid rgba(0,158,219,0.4);
+  }
+
+  .header-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+  }
+
+  .header-title span { color: var(--un-blue); }
+
+  .header-sub {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,200,150,0.12);
+    border: 1px solid rgba(0,200,150,0.3);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    color: var(--accent-green);
+  }
+
+  .pulse {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  /* Nav tabs */
+  .nav {
+    position: relative; z-index: 10;
+    display: flex;
+    gap: 4px;
+    padding: 16px 40px 0;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,22,40,0.7);
+  }
+
+  .nav-tab {
+    padding: 10px 20px;
+    border-radius: 8px 8px 0 0;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+
+  .nav-tab:hover { color: var(--text-primary); background: var(--glass); }
+  .nav-tab.active {
+    color: var(--un-blue);
+    background: rgba(0,158,219,0.1);
+    border: 1px solid var(--border);
+    border-bottom: 1px solid var(--un-dark);
+  }
+
+  /* Main content */
+  .main { position: relative; z-index: 5; padding: 32px 40px; }
+
+  .page { display: none; }
+  .page.active { display: block; animation: fadeIn 0.3s ease; }
+
+  @keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
+
+  /* KPI row */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .kpi-card {
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent-color, var(--un-blue));
+  }
+
+  .kpi-card:hover { border-color: rgba(0,158,219,0.5); }
+
+  .kpi-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-secondary);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 10px;
+  }
+
+  .kpi-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .kpi-note {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  /* Section title */
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--un-blue);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Cards */
+  .card {
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  /* Two col layout */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+
+  /* Mandate timeline */
+  .timeline { margin-bottom: 24px; }
+
+  .timeline-row {
+    display: grid;
+    grid-template-columns: 80px 120px 1fr 140px 80px;
+    gap: 16px;
+    align-items: center;
+    padding: 14px 20px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    cursor: default;
+  }
+
+  .timeline-row:hover {
+    background: rgba(0,158,219,0.06);
+    border-color: var(--border);
+  }
+
+  .timeline-header {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-secondary);
+    padding: 8px 20px;
+    display: grid;
+    grid-template-columns: 80px 120px 1fr 140px 80px;
+    gap: 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
+
+  .year-badge {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--un-blue);
+  }
+
+  .res-code {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent-gold);
+    background: rgba(245,196,0,0.08);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .priority-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+
+  .priority-text strong { color: var(--text-primary); }
+
+  /* Gap badges */
+  .gap-bar {
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.08);
+    margin-top: 6px;
+    overflow: hidden;
+  }
+
+  .gap-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 1s ease;
+  }
+
+  .gap-item {
+    padding: 16px;
+    border-radius: 10px;
+    border-left: 3px solid;
+    background: var(--glass);
+    margin-bottom: 12px;
+  }
+
+  .gap-item.red { border-color: var(--accent-red); }
+  .gap-item.orange { border-color: var(--accent-orange); }
+  .gap-item.green { border-color: var(--accent-green); }
+  .gap-item.yellow { border-color: var(--accent-gold); }
+
+  .gap-item-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+
+  .gap-item-desc { font-size: 12px; color: var(--text-secondary); }
+
+  .tag {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .tag-poc { background: rgba(0,158,219,0.15); color: var(--un-blue); border: 1px solid rgba(0,158,219,0.3); }
+  .tag-ddr { background: rgba(245,196,0,0.1); color: var(--accent-gold); border: 1px solid rgba(245,196,0,0.3); }
+  .tag-roe { background: rgba(255,107,53,0.1); color: var(--accent-orange); border: 1px solid rgba(255,107,53,0.3); }
+  .tag-jmac { background: rgba(0,200,150,0.1); color: var(--accent-green); border: 1px solid rgba(0,200,150,0.3); }
+  .tag-isr { background: rgba(255,71,87,0.1); color: var(--accent-red); border: 1px solid rgba(255,71,87,0.3); }
+
+  /* Competency heatmap */
+  .heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+  }
+
+  .heatmap-cell {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8px;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  .heatmap-cell:hover { transform: scale(1.05); }
+
+  .heatmap-score {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+  }
+
+  .heatmap-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+    opacity: 0.85;
+  }
+
+  /* Readiness bar */
+  .readiness-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .readiness-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    width: 180px;
+    flex-shrink: 0;
+    color: var(--text-secondary);
+  }
+
+  .readiness-track {
+    flex: 1;
+    height: 8px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .readiness-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1.2s ease;
+  }
+
+  .readiness-score {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    width: 45px;
+    text-align: right;
+  }
+
+  /* Diagnostic JSON viewer */
+  .json-viewer {
+    background: #070F1E;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    overflow-x: auto;
+    position: relative;
+  }
+
+  .json-key { color: var(--un-blue); }
+  .json-str { color: var(--accent-green); }
+  .json-num { color: var(--accent-gold); }
+  .json-bool { color: var(--accent-orange); }
+  .json-bracket { color: var(--text-secondary); }
+
+  .copy-btn {
+    position: absolute;
+    top: 12px; right: 12px;
+    background: rgba(0,158,219,0.15);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 12px;
+    color: var(--un-blue);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .copy-btn:hover { background: rgba(0,158,219,0.3); }
+
+  /* Folder tree */
+  .folder-tree {
+    background: #070F1E;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 2;
+  }
+
+  .folder-line { color: var(--text-secondary); }
+  .folder-name { color: var(--accent-gold); }
+  .file-name { color: var(--text-primary); }
+  .file-desc { color: var(--text-secondary); font-size: 11px; margin-left: 8px; }
+
+  /* Step guide */
+  .step {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 28px;
+    align-items: flex-start;
+  }
+
+  .step-num {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--un-blue), #004B87);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  .step-content { flex: 1; }
+
+  .step-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+
+  .step-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 10px; }
+
+  .cmd-block {
+    background: #070F1E;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--un-blue);
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--accent-green);
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  /* Budget table */
+  .budget-table { width: 100%; border-collapse: collapse; }
+  .budget-table th {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-secondary);
+    text-align: left;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .budget-table td {
+    padding: 12px 16px;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(0,158,219,0.08);
+  }
+
+  .budget-table tr:last-child td { border-bottom: none; font-weight: 600; color: var(--accent-gold); }
+  .budget-table tr:hover td { background: rgba(0,158,219,0.04); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,158,219,0.3); border-radius: 3px; }
+
+  /* Resolution language */
+  .resolution-clause {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .resolution-clause::before {
+    content: attr(data-num);
+    position: absolute;
+    top: -10px; right: -10px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 80px;
+    color: rgba(0,158,219,0.05);
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .clause-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--accent-gold);
+    margin-bottom: 8px;
+  }
+
+  .clause-text {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+
+  .clause-text strong { color: var(--text-primary); font-style: normal; }
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo-area">
+    <div class="un-badge">UN</div>
+    <div>
+      <div class="header-title">MURIIGA <span>·</span> SCHaiR</div>
+      <div class="header-sub">MONUSCO Mandate Intelligence Dashboard · 2020–Feb 2026</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:20px">
+    <div style="text-align:right">
+      <div style="font-size:11px;color:var(--text-secondary);font-family:'DM Mono',monospace">CLASSIFICATION</div>
+      <div style="font-size:12px;color:var(--accent-gold);font-family:'DM Mono',monospace">PILOT DEMO · UNCLASSIFIED</div>
+    </div>
+    <div class="status-pill"><div class="pulse"></div>MURIIGA 1.0 ACTIVE</div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="nav-tab active" onclick="showPage('overview')">📊 Overview</button>
+  <button class="nav-tab" onclick="showPage('mandates')">📋 Mandate Timeline</button>
+  <button class="nav-tab" onclick="showPage('gaps')">⚠️ Gap & Win Analysis</button>
+  <button class="nav-tab" onclick="showPage('training')">🎓 Training & NKEJA</button>
+  <button class="nav-tab" onclick="showPage('resolution')">📜 Draft SC Language</button>
+  <button class="nav-tab" onclick="showPage('files')">🗂️ Files & JSON Guide</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- ═══════ PAGE: OVERVIEW ═══════ -->
+  <div class="page active" id="page-overview">
+
+    <!-- KPIs -->
+    <div class="kpi-row">
+      <div class="kpi-card" style="--accent-color: var(--un-blue)">
+        <div class="kpi-label">Resolutions Analysed</div>
+        <div class="kpi-value">5</div>
+        <div class="kpi-note">2020 → 2024 (S/RES)</div>
+      </div>
+      <div class="kpi-card" style="--accent-color: var(--accent-green)">
+        <div class="kpi-label">Mandate Years</div>
+        <div class="kpi-value">6</div>
+        <div class="kpi-note">2020 – Feb 2026</div>
+      </div>
+      <div class="kpi-card" style="--accent-color: var(--accent-gold)">
+        <div class="kpi-label">Competencies Mapped</div>
+        <div class="kpi-value">24</div>
+        <div class="kpi-note">Across PoC, DDR, JMAC, ISR</div>
+      </div>
+      <div class="kpi-card" style="--accent-color: var(--accent-orange)">
+        <div class="kpi-label">Critical Gaps</div>
+        <div class="kpi-value">8</div>
+        <div class="kpi-note">High-priority shortfalls</div>
+      </div>
+      <div class="kpi-card" style="--accent-color: var(--accent-red)">
+        <div class="kpi-label">Pilot Budget Ask</div>
+        <div class="kpi-value">$95K</div>
+        <div class="kpi-note">Midpoint $58K–$120K range</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <!-- Readiness Scores -->
+      <div class="card">
+        <div class="section-title">Operational Readiness Indicators</div>
+        <div id="readiness-bars"></div>
+      </div>
+
+      <!-- Competency Heatmap -->
+      <div class="card">
+        <div class="section-title">Competency Heatmap (NKEJA Diagnostic)</div>
+        <div class="heatmap-grid" id="heatmap-grid"></div>
+      </div>
+    </div>
+
+    <!-- Pilot Timeline -->
+    <div class="card">
+      <div class="section-title">SCHaiR Pilot Timeline — 90→180 Days</div>
+      <div style="display:grid; grid-template-columns: repeat(5,1fr); gap:12px; margin-top:8px">
+        <div style="background:rgba(0,158,219,0.08);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Phase 0</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px;margin-bottom:4px">Setup</div>
+          <div style="font-size:11px;color:var(--un-blue);font-family:'DM Mono',monospace">Days 0–7</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:6px">DPO alignment & data governance</div>
+        </div>
+        <div style="background:rgba(0,158,219,0.08);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Phase 1</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px;margin-bottom:4px">MURIIGA</div>
+          <div style="font-size:11px;color:var(--un-blue);font-family:'DM Mono',monospace">Days 8–30</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:6px">Mandate ingest & competency matrix</div>
+        </div>
+        <div style="background:rgba(245,196,0,0.07);border:1px solid rgba(245,196,0,0.2);border-radius:10px;padding:16px;text-align:center">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Phase 2</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px;margin-bottom:4px">NKEJA 3.0</div>
+          <div style="font-size:11px;color:var(--accent-gold);font-family:'DM Mono',monospace">Days 31–75</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:6px">Baseline diagnostic & cohort report</div>
+        </div>
+        <div style="background:rgba(255,107,53,0.07);border:1px solid rgba(255,107,53,0.2);border-radius:10px;padding:16px;text-align:center">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Phase 3</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px;margin-bottom:4px">NKEJA 3.1</div>
+          <div style="font-size:11px;color:var(--accent-orange);font-family:'DM Mono',monospace">Days 76–120</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:6px">Adaptive learning & remediation</div>
+        </div>
+        <div style="background:rgba(0,200,150,0.07);border:1px solid rgba(0,200,150,0.2);border-radius:10px;padding:16px;text-align:center">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Phase 4</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px;margin-bottom:4px">CARANA</div>
+          <div style="font-size:11px;color:var(--accent-green);font-family:'DM Mono',monospace">Days 121–180</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:6px">Immersive scenario & AAR</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ PAGE: MANDATES ═══════ -->
+  <div class="page" id="page-mandates">
+    <div class="card timeline">
+      <div class="section-title">UN Security Council Mandate Timeline · MONUSCO 2020–2024</div>
+      <div class="timeline-header">
+        <span>Year</span><span>Resolution</span><span>Primary Priorities</span><span>Force / Civilian</span><span>CONOPs</span>
+      </div>
+
+      <div class="timeline-row">
+        <div class="year-badge">2020</div>
+        <div class="res-code">S/RES/2556</div>
+        <div class="priority-text">
+          <span class="tag tag-poc">PoC</span><span class="tag tag-ddr">DDR</span>
+          <br><strong>Mandate extension</strong>; baseline stabilisation and civilian protection language
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary)">Baseline force ceilings maintained; police emphasis</div>
+        <div style="font-size:11px;color:var(--text-secondary)">PoC patrols; DDR site ops</div>
+      </div>
+
+      <div class="timeline-row">
+        <div class="year-badge">2021</div>
+        <div class="res-code">S/RES/2612</div>
+        <div class="priority-text">
+          <span class="tag tag-poc">PoC</span><span class="tag tag-ddr">DDR/SSR</span>
+          <br><strong>Continued PoC</strong>; DDR/SSR and police capacity strengthening
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary)">Renewed ceiling; civilian harm mitigation emphasis</div>
+        <div style="font-size:11px;color:var(--text-secondary)">Policing; IDP escort; joint ops</div>
+      </div>
+
+      <div class="timeline-row">
+        <div class="year-badge">2022</div>
+        <div class="res-code">S/RES/2666</div>
+        <div class="priority-text">
+          <span class="tag tag-poc">PoC</span><span class="tag tag-jmac">JMAC</span>
+          <br><strong>Stabilisation packages</strong>; support to State authority; logistics demand
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary)">Civilian tasks emphasised; funding requests noted</div>
+        <div style="font-size:11px;color:var(--text-secondary)">QRT; ISR; stabilisation</div>
+      </div>
+
+      <div class="timeline-row">
+        <div class="year-badge">2023</div>
+        <div class="res-code">S/RES/2717</div>
+        <div class="priority-text">
+          <span class="tag tag-poc">PoC</span><span class="tag tag-isr">ISR</span>
+          <br><strong>Tightened reporting</strong>; evolving armed group threats; adaptive tactics
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary)">Operational reporting cadence increased; JMAC burden</div>
+        <div style="font-size:11px;color:var(--text-secondary)">Predictive risk; JMAC fusion</div>
+      </div>
+
+      <div class="timeline-row">
+        <div class="year-badge">2024</div>
+        <div class="res-code">S/RES/2765</div>
+        <div class="priority-text">
+          <span class="tag tag-poc">PoC</span><span class="tag tag-ddr">DDR</span><span class="tag tag-isr">ISR</span>
+          <br><strong>Retains three priorities</strong>; persistent armed groups; mandate → Dec 2025
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary)">Capability gaps explicitly flagged; training pilot encouraged</div>
+        <div style="font-size:11px;color:var(--text-secondary)">Force posture; airlift; CARANA</div>
+      </div>
+    </div>
+
+    <!-- JMAC/JSOC Card -->
+    <div class="two-col">
+      <div class="card">
+        <div class="section-title">JMAC Analysis</div>
+        <p style="font-size:13px;color:var(--text-secondary);line-height:1.7;margin-bottom:12px">
+          Mandates increasingly require <strong style="color:var(--text-primary)">evidence-based planning</strong>. JMAC should provide operational analysis for PoC and stabilisation. In practice, JMAC is overloaded with reporting tasks and lacks integrated access to <strong style="color:var(--text-primary)">behavioural and simulation data</strong>.
+        </p>
+        <div class="gap-item orange" style="margin-bottom:0">
+          <div class="gap-item-title">⚠ Analytic Overload</div>
+          <div class="gap-item-desc">Increased mandate demands not matched by JMAC staffing or predictive tools. Limited real-time ISR fusion for CONOP rehearsal.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">JSOC / CONOPs Implications</div>
+        <p style="font-size:13px;color:var(--text-secondary);line-height:1.7;margin-bottom:12px">
+          Mandate language implies protective patrols, quick reaction, stabilisation support, and DDR facilitation. Without <strong style="color:var(--text-primary)">calibrated force posture and ISR</strong>, CONOPs become reactive.
+        </p>
+        <div class="gap-item red" style="margin-bottom:0">
+          <div class="gap-item-title">🔴 CONOPs Gap</div>
+          <div class="gap-item-desc">SCHaiR supplies doctrine-to-scenario mapping (MURIIGA) and simulation rehearsal (CARANA) to validate CONOPs before deployment.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ PAGE: GAPS ═══════ -->
+  <div class="page" id="page-gaps">
+    <div class="two-col">
+      <div>
+        <div class="section-title">Top 8 Gaps — High Priority</div>
+        <div class="gap-item red">
+          <div class="gap-item-title">🔴 G1 · Capability Mismatch (ISR / Airlift / Engineering)</div>
+          <div class="gap-item-desc">Mandates call for operations but mission lacks organic ISR and tactical airlift capacity.</div>
+          <div class="gap-bar"><div class="gap-fill" style="width:90%;background:var(--accent-red)"></div></div>
+        </div>
+        <div class="gap-item red">
+          <div class="gap-item-title">🔴 G2 · JMAC Under-Resourcing</div>
+          <div class="gap-item-desc">Increased analytic demands not matched by JMAC staffing or automated mandate-mapping tools.</div>
+          <div class="gap-bar"><div class="gap-fill" style="width:85%;background:var(--accent-red)"></div></div>
+        </div>
+        <div class="gap-item orange">
+          <div class="gap-item-title">🟠 G3 · Civilian Component Shortfall</div>
+          <div class="gap-item-desc">Stabilisation tasks require more civilian specialists than funded. Slow recruitment timelines impede delivery.</div>
+          <div class="gap-bar"><div class="gap-fill" style="width:75%;background:var(--accent-orange)"></div></div>
+        </div>
+        <div class="gap-item orange">
+          <div class="gap-item-title">🟠 G4 · Training Measurement Gap</div>
+          <div class="gap-item-desc">Pre-deployment training lacks standardised, measurable readiness and scenario-based decision testing.</div>
+          <div class="gap-bar"><div class="gap-fill" style="width:72%;background:var(--accent-orange)"></div></div>
+        </div>
+        <div class="gap-item yellow">
+          <div class="gap-item-title">🟡 G5 · Funding Shortfalls</div>
+          <div class="gap-item-desc">Donor commitments lag prioritised capability lists for ISR, airlift, and engineering.</div>
+          <div class="gap-bar"><div class="gap-fill" style="width:65%;background:var(--accent-gold)"></div></div>
+        </div>
+        <div class="gap-item yellow">
+          <div class="gap-item-title">🟡 G6 · Slow Civilian Deployment</div>
+          <div class="gap-item-desc">Recruitment and deployment timelines impede program delivery for SSR and governance.</div>
+          <div class="gap-bar"><div class="gap-fill" style="width:60%;background:var(--accent-gold)"></div></div>
+        </div>
+        <div class="gap-item yellow">
+          <div class="gap-item-title">🟡 G7 · Data Governance Gap</div>
+          <div class="gap-item-desc">No standardised mission-level protocols for behavioural/simulation data sovereignty.</div>
+          <div class="gap-bar"><div class="gap-fill" style="width:50%;background:var(--accent-gold)"></div></div>
+        </div>
+        <div class="gap-item yellow">
+          <div class="gap-item-title">🟡 G8 · CONOP Rehearsal Gap</div>
+          <div class="gap-item-desc">Limited ability to rehearse CONOPs with realistic, doctrine-aligned simulations.</div>
+          <div class="gap-bar"><div class="gap-fill" style="width:55%;background:var(--accent-gold)"></div></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">Top 6 Wins</div>
+        <div class="gap-item green">
+          <div class="gap-item-title">✅ W1 · Consistent Mandate Renewals</div>
+          <div class="gap-item-desc">Annual renewals provide political continuity for long-term programming (2020→2024).</div>
+        </div>
+        <div class="gap-item green">
+          <div class="gap-item-title">✅ W2 · Clear PoC & Stabilisation Priorities</div>
+          <div class="gap-item-desc">Mandates consistently prioritise PoC and stabilisation enabling focused programming.</div>
+        </div>
+        <div class="gap-item green">
+          <div class="gap-item-title">✅ W3 · Growing Analytic Emphasis</div>
+          <div class="gap-item-desc">Resolutions increasingly call for evidence-based planning and JMAC analytic products.</div>
+        </div>
+        <div class="gap-item green">
+          <div class="gap-item-title">✅ W4 · Civilian Role in Stabilisation</div>
+          <div class="gap-item-desc">Mandates explicitly call for civilian specialists and governance support (2022–2024).</div>
+        </div>
+        <div class="gap-item green">
+          <div class="gap-item-title">✅ W5 · Training Pilot Authorised</div>
+          <div class="gap-item-desc">S/RES/2765 (2024) explicitly encourages pilot of measurable readiness assessments.</div>
+        </div>
+        <div class="gap-item green">
+          <div class="gap-item-title">✅ W6 · Donor Interest Mobilised</div>
+          <div class="gap-item-desc">Recurrent capability gap reporting has mobilised targeted donor offers in ISR and logistics.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ PAGE: TRAINING ═══════ -->
+  <div class="page" id="page-training">
+    <div class="three-col">
+      <div class="card">
+        <div class="section-title">UN CPTM Status</div>
+        <div style="font-size:13px;color:var(--text-secondary);line-height:1.7">
+          Framework exists but training is often <strong style="color:var(--text-primary)">slide-based</strong>, inconsistent across TCCs, and rarely validated against applied judgment under stress.
+        </div>
+        <div style="margin-top:16px;padding:12px;background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.2);border-radius:8px;font-size:12px;color:var(--accent-red)">
+          ❌ No standardised scenario-based readiness validation
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">AU PAPS Status</div>
+        <div style="font-size:13px;color:var(--text-secondary);line-height:1.7">
+          Standards differ from UN in emphasis and measurement. <strong style="color:var(--text-primary)">Interoperability gaps</strong> exist between AU and UN pre-deployment requirements.
+        </div>
+        <div style="margin-top:16px;padding:12px;background:rgba(255,107,53,0.08);border:1px solid rgba(255,107,53,0.2);border-radius:8px;font-size:12px;color:var(--accent-orange)">
+          ⚠️ No longitudinal learning trajectory tracking
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">SCHaiR Solution</div>
+        <div style="font-size:13px;color:var(--text-secondary);line-height:1.7">
+          MURIIGA converts mandate clauses to competency frameworks. NKEJA delivers scalable diagnostics. CARANA tests applied judgment under stress.
+        </div>
+        <div style="margin-top:16px;padding:12px;background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.2);border-radius:8px;font-size:12px;color:var(--accent-green)">
+          ✅ Doctrine → Learning → Application loop closed
+        </div>
+      </div>
+    </div>
+
+    <!-- NKEJA Diagnostic preview -->
+    <div class="card" style="margin-bottom:24px">
+      <div class="section-title">NKEJA 5-Minute Diagnostic · Sample Items</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="nkeja-items"></div>
+    </div>
+
+    <!-- Budget -->
+    <div class="card">
+      <div class="section-title">Pilot Budget Breakdown</div>
+      <table class="budget-table">
+        <thead>
+          <tr><th>Item</th><th>Scope</th><th>Low (USD)</th><th>High (USD)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>MURIIGA Ingest & Matrix</td><td>NLP, clause mapping, DPO sign-off</td><td>$8,000</td><td>$15,000</td></tr>
+          <tr><td>NKEJA Baseline Deployment</td><td>Dev + deployment + analytics for cohort</td><td>$15,000</td><td>$30,000</td></tr>
+          <tr><td>NKEJA Remediation Modules</td><td>Adaptive modules + dashboards</td><td>$15,000</td><td>$30,000</td></tr>
+          <tr><td>CARANA Scenario Prototype</td><td>1 scenario, facilitation, AAR</td><td>$20,000</td><td>$45,000</td></tr>
+          <tr><td style="color:var(--accent-gold);font-weight:700">TOTAL PILOT</td><td style="color:var(--text-secondary)">90–180 day programme</td><td style="color:var(--accent-gold);font-weight:700">$58,000</td><td style="color:var(--accent-gold);font-weight:700">$120,000</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════ PAGE: RESOLUTION ═══════ -->
+  <div class="page" id="page-resolution">
+    <div style="margin-bottom:24px">
+      <div class="section-title">Draft Security Council Resolution Language — MONUSCO</div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:20px">The following clauses are ready for insertion into a MONUSCO mandate renewal to convert broad tasks into actionable, fundable requirements.</p>
+    </div>
+
+    <div class="resolution-clause" data-num="1">
+      <div class="clause-tag">Clause 1 · Mandate-to-Competency Requirement</div>
+      <div class="clause-text"><strong>"Requests the Secretary-General</strong>, in coordination with the United Nations Department of Peace Operations and the MONUSCO leadership, to translate the mission's mandated tasks into a set of <strong>measurable competencies and scenario taxonomies</strong> to be used for standardised pre-deployment certification and mission training; and to submit a report on the proposed competency framework within 90 days."</div>
+      <div style="margin-top:10px"><span class="tag tag-poc">Training Gap</span><span class="tag tag-jmac">Doctrine Translation</span></div>
+    </div>
+
+    <div class="resolution-clause" data-num="2">
+      <div class="clause-tag">Clause 2 · Analytic Capacity & JMAC Resourcing</div>
+      <div class="clause-text"><strong>"Calls upon Member States</strong> to provide targeted support and resources to strengthen the Joint Mission Analysis Centre (JMAC), including access to <strong>mission-level behavioural and simulation data, ISR fusion capabilities</strong>, and analytic tools necessary for predictive risk assessments; requests the Secretary-General to provide a capability-gap and costed resourcing plan within 60 days."</div>
+      <div style="margin-top:10px"><span class="tag tag-jmac">JMAC</span><span class="tag tag-isr">ISR</span></div>
+    </div>
+
+    <div class="resolution-clause" data-num="3">
+      <div class="clause-tag">Clause 3 · Capability-Matching & Surge Readiness</div>
+      <div class="clause-text"><strong>"Encourages Member States</strong> to provide surge-capable units, tactical airlift, and ISR assets aligned to MONUSCO's operational concept of operations (CONOPs), and requests the Secretary-General to produce a <strong>prioritised list of capability shortfalls with associated budget implications</strong> within 90 days."</div>
+      <div style="margin-top:10px"><span class="tag tag-isr">ISR</span><span class="tag tag-poc">Force Posture</span></div>
+    </div>
+
+    <div class="resolution-clause" data-num="4">
+      <div class="clause-tag">Clause 4 · Training Certification & Pilot Authorisation</div>
+      <div class="clause-text"><strong>"Authorises the Secretary-General</strong> to pilot standardised, measurable pre-deployment readiness assessments, including <strong>scenario-based decision testing and behavioural diagnostics</strong>, in partnership with willing troop-contributing countries and regional organisations; requests a pilot report and recommendations for wider adoption within 6 months."</div>
+      <div style="margin-top:10px"><span class="tag tag-ddr">Pre-deployment</span><span class="tag tag-roe">Certification</span></div>
+    </div>
+
+    <div class="resolution-clause" data-num="5">
+      <div class="clause-tag">Clause 5 · Data Governance & Sovereignty</div>
+      <div class="clause-text"><strong>"Requests that all data</strong> collected for training, analytics, and certification be governed by clear <strong>data-protection, anonymisation, and institutional ownership</strong> arrangements that preserve UN/AU data sovereignty, ensure informed consent, and enable transparent algorithmic explainability."</div>
+      <div style="margin-top:10px"><span class="tag tag-jmac">Data Ethics</span><span class="tag tag-isr">Governance</span></div>
+    </div>
+  </div>
+
+  <!-- ═══════ PAGE: FILES & JSON GUIDE ═══════ -->
+  <div class="page" id="page-files">
+
+    <div class="section-title">Where Your Files Live — Plain Language Guide</div>
+
+    <!-- Folder structure -->
+    <div class="two-col" style="margin-bottom:24px">
+      <div class="card">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:16px">📁 Your Project Folder Structure</div>
+        <div class="folder-tree">
+<span class="folder-name">C:\muriiga_project\</span>
+<span class="folder-line"> │</span>
+<span class="folder-line"> ├── </span><span class="folder-name">data\</span>
+<span class="folder-line"> │    ├── </span><span class="file-name">MURIIGA_MANDATE_2020_2026.json</span><span class="file-desc">← your main data</span>
+<span class="folder-line"> │    ├── </span><span class="file-name">diagnostic.json</span><span class="file-desc">← NKEJA test items</span>
+<span class="folder-line"> │    ├── </span><span class="file-name">nkeja_run_sample.csv</span><span class="file-desc">← sample results</span>
+<span class="folder-line"> │    ├── </span><span class="file-name">consolidated.csv</span>
+<span class="folder-line"> │    ├── </span><span class="file-name">gaps_wins.csv</span>
+<span class="folder-line"> │    └── </span><span class="file-name">bibliography.csv</span>
+<span class="folder-line"> │</span>
+<span class="folder-line"> ├── </span><span class="folder-name">exports\</span>
+<span class="folder-line"> │    ├── </span><span class="file-name">muriiga_summary_2026-02-23.csv</span>
+<span class="folder-line"> │    └── </span><span class="file-name">muriiga_summary_2026-02-23.xlsx</span>
+<span class="folder-line"> │</span>
+<span class="folder-line"> ├── </span><span class="file-name">app.py</span><span class="file-desc">← dashboard app</span>
+<span class="folder-line"> ├── </span><span class="file-name">etl.py</span><span class="file-desc">← data loader</span>
+<span class="folder-line"> ├── </span><span class="file-name">run_muriiga_analysis.py</span>
+<span class="folder-line"> └── </span><span class="file-name">requirements.txt</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:16px">🗺️ What Each File Does</div>
+        <div style="font-size:13px;line-height:2;color:var(--text-secondary)">
+          <div><span style="color:var(--accent-gold)">📄 MURIIGA_MANDATE_2020_2026.json</span><br>Your master data file. Contains all mandate analysis results in JSON format.</div>
+          <div style="margin-top:10px"><span style="color:var(--accent-gold)">📄 diagnostic.json</span><br>The 8 NKEJA test questions (K1–K6, S1, S2) with answers and scoring rules.</div>
+          <div style="margin-top:10px"><span style="color:var(--un-blue)">📊 nkeja_run_sample.csv</span><br>A spreadsheet of participant answers, response times, and confidence ratings.</div>
+          <div style="margin-top:10px"><span style="color:var(--accent-green)">🐍 app.py</span><br>Python script that runs the interactive dashboard at http://127.0.0.1:8050</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step by step how to create and save JSON -->
+    <div class="card" style="margin-bottom:24px">
+      <div class="section-title">Step-by-Step · Creating & Saving Your JSON Files</div>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Open PowerShell and create your folders</div>
+          <div class="step-desc">Click the Windows Start button, type <strong>PowerShell</strong>, press Enter. Then type each line below and press Enter after each one.</div>
+          <div class="cmd-block">mkdir C:\muriiga_project
+cd C:\muriiga_project
+mkdir data
+mkdir exports</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Create the diagnostic JSON file</div>
+          <div class="step-desc">Open Notepad. Copy the JSON code shown below on the "JSON Code" tab. Paste it into Notepad. Then go to <strong>File → Save As</strong>, navigate to <code>C:\muriiga_project\data\</code>, type the filename <code>diagnostic.json</code>, and in "Save as type" choose <strong>All Files (*.*)</strong>. Click Save.</div>
+          <div class="cmd-block">Save location:  C:\muriiga_project\data\diagnostic.json
+Save as type:   All Files (*.*)
+Encoding:       UTF-8</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Verify the JSON file is valid</div>
+          <div class="step-desc">Back in PowerShell, run this command. If it prints <strong>OK</strong>, your file is saved correctly.</div>
+          <div class="cmd-block">python -c "import json; json.load(open('data\\diagnostic.json')); print('OK')"</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">Install Python packages (one time only)</div>
+          <div class="step-desc">Copy and paste this entire line into PowerShell and press Enter. Wait for it to finish.</div>
+          <div class="cmd-block">python -m pip install dash dash-bootstrap-components pandas openpyxl jsonschema plotly</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="step-title">Run the ETL and start the dashboard</div>
+          <div class="step-desc">Run these two commands. Then open your browser and go to <strong>http://127.0.0.1:8050</strong></div>
+          <div class="cmd-block">python etl.py
+python app.py</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JSON viewer -->
+    <div class="card">
+      <div class="section-title">Diagnostic JSON Code · Copy This Into Notepad</div>
+      <div class="json-viewer" id="json-display">
+        <button class="copy-btn" onclick="copyJSON()">Copy All</button>
+        <pre id="json-pre"></pre>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ── Navigation ──────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ── Data ──────────────────────────────────────────────────────
+const readinessData = [
+  { label: 'PoC Patrols & QRT Response', score: 78, color: '#00C896' },
+  { label: 'DDR / Reintegration Ops', score: 65, color: '#009EDB' },
+  { label: 'JMAC Analytic Capacity', score: 42, color: '#FF6B35' },
+  { label: 'ISR Integration', score: 35, color: '#FF4757' },
+  { label: 'Civilian Component Deploy', score: 55, color: '#F5C400' },
+  { label: 'Pre-deployment Training', score: 48, color: '#FF6B35' },
+  { label: 'Logistics / Airlift', score: 40, color: '#FF4757' },
+  { label: 'Data Governance', score: 30, color: '#FF4757' },
+];
+
+const heatmapData = [
+  { label: 'PoC', score: 78, color: '#00C896' },
+  { label: 'DDR', score: 65, color: '#009EDB' },
+  { label: 'ROE', score: 42, color: '#FF6B35' },
+  { label: 'JMAC', score: 38, color: '#FF4757' },
+  { label: 'ISR', score: 35, color: '#FF4757' },
+  { label: 'SEA', score: 82, color: '#00C896' },
+  { label: 'Log', score: 55, color: '#F5C400' },
+  { label: 'Gov', score: 60, color: '#F5C400' },
+  { label: 'HR', score: 72, color: '#00C896' },
+  { label: 'SSR', score: 48, color: '#FF6B35' },
+  { label: 'CVR', score: 65, color: '#009EDB' },
+  { label: 'Data', score: 30, color: '#FF4757' },
+];
+
+const nkejaItems = [
+  { id: 'K1', comp: 'ROE', prompt: 'Which action is authorized when hostile fire originates from a compound and civilians are present outside?', correct: 'B', answer: 'Request ISR, then establish a cordon to protect civilians.', score: 42 },
+  { id: 'K2', comp: 'PoC', prompt: 'When civilians are trapped between two armed groups, what is the immediate priority?', correct: 'B', answer: 'Prioritize civilian evacuation and establish safe corridors.', score: 78 },
+  { id: 'K3', comp: 'SEA', prompt: 'Which referral pathway is correct for a reported SEA case involving a peacekeeper?', correct: 'B', answer: 'Report immediately through the mission\'s SEA channel and protect the survivor.', score: 82 },
+  { id: 'S1', comp: 'Decision', prompt: 'Scenario: Conflicting reports of armed group movement & civilian displacement. Choose patrol posture.', correct: 'B/D', answer: 'Deploy escort OR request ISR and coordinate — both score 2/2.', score: 61 },
+];
+
+const diagnosticJSON = {
+  "diagnostic_id": "MONUSCO_PoC_ROE_2026_v1",
+  "title": "MONUSCO Rapid Diagnostic - PoC & ROE Focus",
+  "duration_seconds": 300,
+  "items": [
+    {
+      "id": "K1", "type": "mcq",
+      "prompt": "Which action is authorized when hostile fire originates from a compound and civilians are present outside the compound?",
+      "options": [
+        {"key": "A", "text": "Engage immediately with direct fire."},
+        {"key": "B", "text": "Request ISR, then establish a cordon to protect civilians."},
+        {"key": "C", "text": "Withdraw to a safe distance and await orders."},
+        {"key": "D", "text": "Order immediate evacuation without assessing threat."}
+      ],
+      "correct_option": "B",
+      "competency_tags": ["ROE", "PoC"],
+      "time_limit_seconds": 35
+    },
+    {
+      "id": "K2", "type": "mcq",
+      "prompt": "When civilians are trapped between two armed groups, what is the immediate priority?",
+      "options": [
+        {"key": "A", "text": "Intervene with force to separate the groups."},
+        {"key": "B", "text": "Prioritize civilian evacuation and establish safe corridors."},
+        {"key": "C", "text": "Document the incident and report later."},
+        {"key": "D", "text": "Request political mediation before any action."}
+      ],
+      "correct_option": "B",
+      "competency_tags": ["PoC", "Evacuation"],
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "K3", "type": "mcq",
+      "prompt": "Which referral pathway is correct for a reported SEA case involving a peacekeeper?",
+      "options": [
+        {"key": "A", "text": "Handle it locally."},
+        {"key": "B", "text": "Report immediately through the SEA channel and protect the survivor."},
+        {"key": "C", "text": "Delay reporting until verified by local authorities."},
+        {"key": "D", "text": "Refer to the TCC only."}
+      ],
+      "correct_option": "B",
+      "competency_tags": ["Protection", "SEA", "Referral"],
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "S1", "type": "scenario_choice",
+      "prompt": "Scenario A: Conflicting reports of armed group movement and civilian displacement. Choose patrol posture.",
+      "options": [
+        {"key": "A", "text": "Hold position and monitor."},
+        {"key": "B", "text": "Deploy escort to facilitate civilian movement to safe zones."},
+        {"key": "C", "text": "Initiate immediate clearance operation."},
+        {"key": "D", "text": "Request ISR and coordinate with local authorities."}
+      ],
+      "scoring": {"A": 1, "B": 2, "C": 0, "D": 2},
+      "competency_tags": ["Decision Making", "PoC"],
+      "time_limit_seconds": 40
+    },
+    {
+      "id": "S2", "type": "scenario_choice",
+      "prompt": "Scenario B: A local commander requests unilateral clearance to detain suspected combatants. Your response?",
+      "options": [
+        {"key": "A", "text": "Approve the request immediately."},
+        {"key": "B", "text": "Deny and escalate to legal and mission leadership."},
+        {"key": "C", "text": "Monitor without intervention."},
+        {"key": "D", "text": "Authorize temporary detention pending legal review."}
+      ],
+      "scoring": {"A": 0, "B": 2, "C": 1, "D": 1},
+      "competency_tags": ["ROE", "Legal", "Accountability"],
+      "time_limit_seconds": 40
+    }
+  ]
+};
+
+// ── Render Readiness Bars ─────────────────────────────────────
+function renderReadiness() {
+  const el = document.getElementById('readiness-bars');
+  readinessData.forEach(d => {
+    el.innerHTML += `
+      <div class="readiness-item">
+        <div class="readiness-label">${d.label}</div>
+        <div class="readiness-track">
+          <div class="readiness-fill" style="width:0%;background:${d.color}" data-w="${d.score}%"></div>
+        </div>
+        <div class="readiness-score" style="color:${d.color}">${d.score}%</div>
+      </div>`;
+  });
+}
+
+// ── Render Heatmap ────────────────────────────────────────────
+function renderHeatmap() {
+  const el = document.getElementById('heatmap-grid');
+  heatmapData.forEach(d => {
+    const bg = d.score > 70 ? 'rgba(0,200,150,0.15)' : d.score > 55 ? 'rgba(245,196,0,0.12)' : 'rgba(255,71,87,0.12)';
+    const border = d.score > 70 ? 'rgba(0,200,150,0.3)' : d.score > 55 ? 'rgba(245,196,0,0.3)' : 'rgba(255,71,87,0.3)';
+    el.innerHTML += `
+      <div class="heatmap-cell" style="background:${bg};border:1px solid ${border}" title="${d.label}: ${d.score}%">
+        <div class="heatmap-score" style="color:${d.color}">${d.score}</div>
+        <div class="heatmap-label" style="color:${d.color}">${d.label}</div>
+      </div>`;
+  });
+}
+
+// ── Render NKEJA Items ────────────────────────────────────────
+function renderNKEJA() {
+  const el = document.getElementById('nkeja-items');
+  nkejaItems.forEach(d => {
+    const color = d.score > 70 ? 'var(--accent-green)' : d.score > 55 ? 'var(--accent-gold)' : 'var(--accent-orange)';
+    el.innerHTML += `
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--un-blue)">${d.id}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;padding:2px 8px;background:rgba(0,158,219,0.1);border:1px solid rgba(0,158,219,0.2);border-radius:4px;color:var(--un-blue)">${d.comp}</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:${color}">${d.score}%</div>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;line-height:1.5">${d.prompt}</div>
+        <div style="font-size:11px;color:${color};background:rgba(0,200,150,0.06);border:1px solid rgba(0,200,150,0.15);border-radius:6px;padding:8px">
+          ✓ ${d.answer}
+        </div>
+      </div>`;
+  });
+}
+
+// ── Render JSON ───────────────────────────────────────────────
+function renderJSON() {
+  const pre = document.getElementById('json-pre');
+  pre.innerHTML = syntaxHighlight(JSON.stringify(diagnosticJSON, null, 2));
+}
+
+function syntaxHighlight(json) {
+  return json
+    .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+      let cls = 'json-num';
+      if (/^"/.test(match)) {
+        if (/:$/.test(match)) { cls = 'json-key'; }
+        else { cls = 'json-str'; }
+      } else if (/true|false/.test(match)) { cls = 'json-bool'; }
+      return '<span class="' + cls + '">' + match + '</span>';
+    });
+}
+
+function copyJSON() {
+  navigator.clipboard.writeText(JSON.stringify(diagnosticJSON, null, 2));
+  const btn = document.querySelector('.copy-btn');
+  btn.textContent = 'Copied!';
+  setTimeout(() => btn.textContent = 'Copy All', 2000);
+}
+
+// ── Animate bars on load ──────────────────────────────────────
+function animateBars() {
+  setTimeout(() => {
+    document.querySelectorAll('.readiness-fill').forEach(el => {
+      el.style.width = el.dataset.w;
+    });
+  }, 300);
+}
+
+// ── Init ──────────────────────────────────────────────────────
+renderReadiness();
+renderHeatmap();
+renderNKEJA();
+renderJSON();
+animateBars();
+</script>
+</body>
+</html>
